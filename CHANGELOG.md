@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.2 - 2026-09-14
+#### Bug Fixes
+- update deps - (4aa5c9e) - Nathan Blair
+
+- - -
+
 ## 0.0.1 - 2026-09-14
 #### Bug Fixes
 - explicit health check over http at /healthz endpoint - (78bdf62) - Nathan Blair
