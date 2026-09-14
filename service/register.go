@@ -6,21 +6,19 @@ import (
 
 	"connectrpc.com/connect/v2"
 
-	foundation "git.sonicoriginal.software/connect-foundation/server"
-	"git.sonicoriginal.software/grpc-connect-protos/diagnostics/diagnosticsconnect"
-	"git.sonicoriginal.software/grpc-connect-protos/health/healthconnect"
-	"git.sonicoriginal.software/grpc-connect-protos/info/infoconnect"
-	healthpb "git.sonicoriginal.software/grpc-connect-protos/health"
+	foundation "github.com/pbrpc/connect-foundation/server"
+	"github.com/pbrpc/connect-protos/diagnostics/diagnosticsconnect"
+	"github.com/pbrpc/connect-protos/info/infoconnect"
 
-	"git.sonicoriginal.software/connect-service/diagnostics"
-	"git.sonicoriginal.software/connect-service/health"
+	"github.com/pbrpc/connect-service/diagnostics"
+	"github.com/pbrpc/connect-service/health"
 )
 
-// Register attaches the caller's services to rpc, along with the diagnostics,
-// info, and health services every service exposes, and puts the health
-// service's plain HTTP route on mux. It marks each of the caller's services
-// SERVING and returns their fully qualified method names, which is what the
-// server exposes beyond that infrastructure.
+// Register attaches the caller's services to rpc, along with the diagnostics
+// and info services every service exposes, and puts the health probe route on
+// mux. It marks each of the caller's services SERVING and returns their fully
+// qualified method names, which is what the server exposes beyond that
+// infrastructure.
 //
 // checks are the dependencies the diagnostics service reports on. Every
 // dependency is the caller's to name; nil means none.
@@ -52,13 +50,12 @@ func Register(
 
 	diagnosticsconnect.RegisterDiagnosticsServiceHandler(rpc, diagnostics.NewServer(checks))
 	infoconnect.RegisterInfoServiceHandler(rpc, &infoServer{version: foundation.Version()})
-	healthconnect.RegisterHealthHandler(rpc, healthSrv)
 	mux.Handle(health.HTTPPath, healthSrv)
 
 	methodNames := methods(rpc.Specs())
 
 	for _, serviceName := range serviceNames(methodNames) {
-		healthSrv.SetServingStatus(serviceName, healthpb.HealthCheckResponse_SERVING)
+		healthSrv.SetServingStatus(serviceName, health.StatusServing)
 	}
 
 	return methodNames, nil

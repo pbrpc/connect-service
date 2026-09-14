@@ -8,8 +8,7 @@ import (
 	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	healthpb "git.sonicoriginal.software/grpc-connect-protos/health"
-	"git.sonicoriginal.software/grpc-connect-protos/health/healthconnect"
+	"github.com/pbrpc/connect-service/health"
 )
 
 const exampleService = "example.ExampleService"
@@ -62,23 +61,16 @@ func (m *muxStub) handled(pattern string) bool {
 	return slices.Contains(m.patterns, pattern)
 }
 
-// healthStub records the serving statuses Register set. The embedded handler
-// supplies the procedures, which Register attaches and never calls.
+// healthStub records the serving statuses Register set.
 type healthStub struct {
-	healthconnect.UnimplementedHealthHandler
-
-	statuses map[string]healthpb.HealthCheckResponse_ServingStatus
+	statuses map[string]health.Status
 }
 
 func newHealthStub() *healthStub {
-	return &healthStub{
-		statuses: map[string]healthpb.HealthCheckResponse_ServingStatus{},
-	}
+	return &healthStub{statuses: map[string]health.Status{}}
 }
 
-func (h *healthStub) SetServingStatus(
-	service string, status healthpb.HealthCheckResponse_ServingStatus,
-) {
+func (h *healthStub) SetServingStatus(service string, status health.Status) {
 	h.statuses[service] = status
 }
 

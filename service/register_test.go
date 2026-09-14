@@ -7,9 +7,7 @@ import (
 
 	"connectrpc.com/connect/v2"
 
-	healthpb "git.sonicoriginal.software/grpc-connect-protos/health"
-
-	"git.sonicoriginal.software/connect-service/health"
+	"github.com/pbrpc/connect-service/health"
 )
 
 func TestRegister(t *testing.T) {
@@ -54,7 +52,7 @@ func TestRegister(t *testing.T) {
 		}
 	})
 
-	t.Run("registers diagnostics, info, and health", func(t *testing.T) {
+	t.Run("registers diagnostics and info", func(t *testing.T) {
 		rpc := connect.NewServer()
 
 		if _, err := Register(rpc, &muxStub{}, newHealthStub(), nil, nil); err != nil {
@@ -64,7 +62,6 @@ func TestRegister(t *testing.T) {
 		for _, name := range []string{
 			"diagnostics.DiagnosticsService",
 			"info.InfoService",
-			"grpc.health.v1.Health",
 		} {
 			if !registered(rpc, name) {
 				t.Errorf("%q was not registered", name)
@@ -127,8 +124,8 @@ func TestRegister(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		want := map[string]healthpb.HealthCheckResponse_ServingStatus{
-			exampleService: healthpb.HealthCheckResponse_SERVING,
+		want := map[string]health.Status{
+			exampleService: health.StatusServing,
 		}
 		if len(healthSrv.statuses) != len(want) {
 			t.Fatalf("statuses = %v, want %v", healthSrv.statuses, want)

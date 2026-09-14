@@ -5,8 +5,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	healthpb "git.sonicoriginal.software/grpc-connect-protos/health"
 )
 
 // get sends a GET for target to srv and answers with the recording.
@@ -27,14 +25,14 @@ func TestServeHTTP(t *testing.T) {
 		if got := recorder.Header().Get("Content-Type"); got != "application/json" {
 			t.Errorf("content type = %q, want application/json", got)
 		}
-		if !strings.Contains(recorder.Body.String(), `"SERVING"`) {
-			t.Errorf("body = %q, want the serving status", recorder.Body.String())
+		if got := strings.TrimSpace(recorder.Body.String()); got != `{"status":"SERVING"}` {
+			t.Errorf("body = %q, want the serving status", got)
 		}
 	})
 
 	t.Run("answers 503 for a service not serving", func(t *testing.T) {
 		srv := NewServer()
-		srv.SetServingStatus(exampleService, healthpb.HealthCheckResponse_NOT_SERVING)
+		srv.SetServingStatus(exampleService, StatusNotServing)
 
 		recorder := get(srv, HTTPPath+"?service="+exampleService)
 
@@ -48,7 +46,7 @@ func TestServeHTTP(t *testing.T) {
 
 	t.Run("answers 200 for a serving service", func(t *testing.T) {
 		srv := NewServer()
-		srv.SetServingStatus(exampleService, healthpb.HealthCheckResponse_SERVING)
+		srv.SetServingStatus(exampleService, StatusServing)
 
 		if recorder := get(srv, HTTPPath+"?service="+exampleService); recorder.Code != http.StatusOK {
 			t.Fatalf("status = %d, want 200", recorder.Code)

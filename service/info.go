@@ -4,8 +4,8 @@ package service
 import (
 	"context"
 
-	infopb "git.sonicoriginal.software/grpc-connect-protos/info"
-	"git.sonicoriginal.software/grpc-connect-protos/info/infoconnect"
+	infopb "github.com/pbrpc/connect-protos/info"
+	"github.com/pbrpc/connect-protos/info/infoconnect"
 )
 
 // infoServer reports facts about the running server. Every service exposes the

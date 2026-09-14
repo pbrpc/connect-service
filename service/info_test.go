@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	infopb "git.sonicoriginal.software/grpc-connect-protos/info"
+	infopb "github.com/pbrpc/connect-protos/info"
 )
 
 func TestInfoServerVersion(t *testing.T) {

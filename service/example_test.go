@@ -10,13 +10,13 @@ import (
 
 	"git.sonicoriginal.software/logger"
 
-	foundationclient "git.sonicoriginal.software/connect-foundation/client"
-	foundationotel "git.sonicoriginal.software/connect-foundation/otel"
-	foundation "git.sonicoriginal.software/connect-foundation/server"
+	foundationclient "github.com/pbrpc/connect-foundation/client"
+	foundationotel "github.com/pbrpc/connect-foundation/otel"
+	foundation "github.com/pbrpc/connect-foundation/server"
 
-	"git.sonicoriginal.software/connect-service/diagnostics"
-	"git.sonicoriginal.software/connect-service/health"
-	"git.sonicoriginal.software/connect-service/service"
+	"github.com/pbrpc/connect-service/diagnostics"
+	"github.com/pbrpc/connect-service/health"
+	"github.com/pbrpc/connect-service/service"
 )
 
 const cleanupTimeout = 5 * time.Second
@@ -58,16 +58,18 @@ func Example() {
 	defer foundation.HandleGracefulShutdown(ctx, log, srv.HTTP, flush, cleanupTimeout)
 
 	// Checks for the upstream services this one depends on, keyed by the name
-	// diagnostics reports them under. Each is the client the service actually
-	// uses, so what is reported is what is in use.
+	// diagnostics reports them under. Each probes over the HTTP client the
+	// service actually reaches that upstream with, so what is reported is what
+	// is in use.
 	checks := diagnostics.Checks{}
 
 	if upstreamAddress := os.Getenv("UPSTREAM_ADDRESS"); upstreamAddress != "" {
-		upstream := foundationclient.New(
-			foundationclient.NewHTTPClient(nil), foundationclient.BaseURL(upstreamAddress), nil,
-		)
+		httpClient := foundationclient.NewHTTPClient(nil)
 
-		checks["upstream"] = diagnostics.NewDependencyCheck(upstream, upstreamAddress)
+		// The Connect client for the upstream's own procedures is built on the
+		// same HTTP client:
+		//   foundationclient.New(httpClient, foundationclient.BaseURL(upstreamAddress), nil)
+		checks["upstream"] = diagnostics.NewDependencyCheck(httpClient, upstreamAddress)
 	}
 
 	healthSrv := health.NewServer()

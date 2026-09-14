@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	diagpb "git.sonicoriginal.software/grpc-connect-protos/diagnostics"
+	diagpb "github.com/pbrpc/connect-protos/diagnostics"
 )
 
 type checkStub struct {

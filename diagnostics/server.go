@@ -4,8 +4,8 @@ package diagnostics
 import (
 	"context"
 
-	diagpb "git.sonicoriginal.software/grpc-connect-protos/diagnostics"
-	"git.sonicoriginal.software/grpc-connect-protos/diagnostics/diagnosticsconnect"
+	diagpb "github.com/pbrpc/connect-protos/diagnostics"
+	"github.com/pbrpc/connect-protos/diagnostics/diagnosticsconnect"
 )
 
 // Server is a DiagnosticsService Server

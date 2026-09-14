@@ -13,7 +13,7 @@ import (
 // method list and never reports a health status for. They are up exactly when
 // the process is, which the health service's own "" entry already reports.
 var infrastructurePrefixes = []string{
-	"grpc.",        // gRPC infrastructure (health)
+	"grpc.",        // grpc.health.v1 and other standard gRPC services
 	"info.",        // info endpoint
 	"diagnostics.", // diagnostics endpoint
 }

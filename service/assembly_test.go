@@ -12,17 +12,15 @@ import (
 	"connectrpc.com/connect/v2/connectinprocess"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	foundation "git.sonicoriginal.software/connect-foundation/server"
-	diagpb "git.sonicoriginal.software/grpc-connect-protos/diagnostics"
-	"git.sonicoriginal.software/grpc-connect-protos/diagnostics/diagnosticsconnect"
-	healthpb "git.sonicoriginal.software/grpc-connect-protos/health"
-	"git.sonicoriginal.software/grpc-connect-protos/health/healthconnect"
-	infopb "git.sonicoriginal.software/grpc-connect-protos/info"
-	"git.sonicoriginal.software/grpc-connect-protos/info/infoconnect"
+	foundation "github.com/pbrpc/connect-foundation/server"
+	diagpb "github.com/pbrpc/connect-protos/diagnostics"
+	"github.com/pbrpc/connect-protos/diagnostics/diagnosticsconnect"
+	infopb "github.com/pbrpc/connect-protos/info"
+	"github.com/pbrpc/connect-protos/info/infoconnect"
 
-	"git.sonicoriginal.software/connect-service/diagnostics"
-	"git.sonicoriginal.software/connect-service/health"
-	"git.sonicoriginal.software/connect-service/service"
+	"github.com/pbrpc/connect-service/diagnostics"
+	"github.com/pbrpc/connect-service/health"
+	"github.com/pbrpc/connect-service/service"
 )
 
 const (
@@ -48,9 +46,18 @@ func registerEcho(rpc *connect.Server) {
 	})
 }
 
-// upstreamCheck stands in for a dependency check the caller wrote.
-func upstreamCheck(context.Context) (*diagpb.ServiceDependency, error) {
-	return &diagpb.ServiceDependency{Address: "upstream:50051", State: diagnostics.StateReachable}, nil
+// upstreamClient stands in for the HTTP client a dependency is reached with:
+// it hands every request to a health server's probe route in-process, so the
+// dependency check runs against the real route with nothing listening.
+type upstreamClient struct {
+	srv *health.Server
+}
+
+func (c *upstreamClient) Do(request *http.Request) (*http.Response, error) {
+	recorder := httptest.NewRecorder()
+	c.srv.ServeHTTP(recorder, request)
+
+	return recorder.Result(), nil
 }
 
 // assemble is the whole startup sequence short of listening: the foundation
@@ -61,7 +68,9 @@ func assemble(t *testing.T) (*foundation.Server, *health.Server) {
 
 	srv := foundation.New(slog.New(slog.DiscardHandler))
 	healthSrv := health.NewServer()
-	checks := diagnostics.Checks{dependencyName: upstreamCheck}
+	checks := diagnostics.Checks{
+		dependencyName: diagnostics.NewDependencyCheck(&upstreamClient{srv: health.NewServer()}, "upstream:50051"),
+	}
 
 	methods, err := service.Register(srv.RPC, srv.Mux, healthSrv, checks, registerEcho)
 	if err != nil {
@@ -75,6 +84,14 @@ func assemble(t *testing.T) (*foundation.Server, *health.Server) {
 	srv.Mount()
 
 	return srv, healthSrv
+}
+
+// probe sends GET target through the mux and answers with the recording.
+func probe(srv *foundation.Server, target string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	srv.Mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, target, nil))
+
+	return recorder
 }
 
 func TestAssembly(t *testing.T) {
@@ -97,20 +114,6 @@ func TestAssembly(t *testing.T) {
 		}
 	})
 
-	t.Run("health reports the process and the caller's service", func(t *testing.T) {
-		healthClient := healthconnect.NewHealthClient(client)
-
-		for _, name := range []string{"", exampleService} {
-			response, err := healthClient.Check(t.Context(), &healthpb.HealthCheckRequest{Service: name})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if response.GetStatus() != healthpb.HealthCheckResponse_SERVING {
-				t.Errorf("%q status = %v, want SERVING", name, response.GetStatus())
-			}
-		}
-	})
-
 	t.Run("info reports the configured version", func(t *testing.T) {
 		response, err := infoconnect.NewInfoServiceClient(client).Version(t.Context(), &infopb.VersionRequest{})
 		if err != nil {
@@ -121,7 +124,7 @@ func TestAssembly(t *testing.T) {
 		}
 	})
 
-	t.Run("diagnostics reports the caller's dependency", func(t *testing.T) {
+	t.Run("diagnostics probes the caller's dependency", func(t *testing.T) {
 		response, err := diagnosticsconnect.NewDiagnosticsServiceClient(client).
 			GetDiagnostics(t.Context(), &diagpb.GetDiagnosticsRequest{})
 		if err != nil {
@@ -135,12 +138,14 @@ func TestAssembly(t *testing.T) {
 		if dependency.GetState() != diagnostics.StateReachable {
 			t.Errorf("state = %q, want %q", dependency.GetState(), diagnostics.StateReachable)
 		}
+		if dependency.GetServing() != string(health.StatusServing) {
+			t.Errorf("serving = %q, want SERVING", dependency.GetServing())
+		}
 	})
 
-	t.Run("the health route answers plain HTTP on the mux", func(t *testing.T) {
+	t.Run("the probe route reports the process and the caller's service", func(t *testing.T) {
 		for _, target := range []string{health.HTTPPath, health.HTTPPath + "?service=" + exampleService} {
-			recorder := httptest.NewRecorder()
-			srv.Mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, target, nil))
+			recorder := probe(srv, target)
 
 			if recorder.Code != http.StatusOK {
 				t.Errorf("%s: status = %d, want 200", target, recorder.Code)
@@ -151,24 +156,10 @@ func TestAssembly(t *testing.T) {
 		}
 	})
 
-	t.Run("the caller's status change reaches both routes", func(t *testing.T) {
-		healthSrv.SetServingStatus(exampleService, healthpb.HealthCheckResponse_NOT_SERVING)
+	t.Run("the caller's status change reaches the probe route", func(t *testing.T) {
+		healthSrv.SetServingStatus(exampleService, health.StatusNotServing)
 
-		response, err := healthconnect.NewHealthClient(client).
-			Check(t.Context(), &healthpb.HealthCheckRequest{Service: exampleService})
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if response.GetStatus() != healthpb.HealthCheckResponse_NOT_SERVING {
-			t.Errorf("status = %v, want NOT_SERVING", response.GetStatus())
-		}
-
-		recorder := httptest.NewRecorder()
-		srv.Mux.ServeHTTP(recorder, httptest.NewRequest(
-			http.MethodGet, health.HTTPPath+"?service="+exampleService, nil,
-		))
-
-		if recorder.Code != http.StatusServiceUnavailable {
+		if recorder := probe(srv, health.HTTPPath+"?service="+exampleService); recorder.Code != http.StatusServiceUnavailable {
 			t.Errorf("status = %d, want 503", recorder.Code)
 		}
 	})
