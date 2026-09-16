@@ -5,14 +5,14 @@ go 1.27.1
 require (
 	connectrpc.com/connect/v2 v2.0.0-alpha.1
 	git.sonicoriginal.software/logger v0.1.0
-	github.com/pbrpc/connect-foundation v0.1.0
-	github.com/pbrpc/connect-protos v0.1.1
+	github.com/pbrpc/connect-foundation v0.3.0
+	github.com/pbrpc/connect-protos v0.2.1
 	google.golang.org/protobuf v1.36.12
 )
 
 require (
-	git.sonicoriginal.software/grpc-foundation v0.11.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
+	github.com/cenkalti/backoff/v7 v7.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
