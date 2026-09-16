@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.1.1 - 2026-09-16
+#### Bug Fixes
+- update connect-foundation - (6826706) - Nathan Blair
+
+- - -
+
 ## 0.1.0 - 2026-09-16
 #### Features
 - remove grpc-foundation dep - (b5af115) - Nathan Blair
