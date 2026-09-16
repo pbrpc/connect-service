@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	connectrpc.com/connect/v2 v2.0.0-alpha.1
 	git.sonicoriginal.software/logger v0.1.0
-	github.com/pbrpc/connect-foundation v0.3.0
+	github.com/pbrpc/connect-foundation v0.4.0
 	github.com/pbrpc/connect-protos v0.2.1
 	google.golang.org/protobuf v1.36.12
 )

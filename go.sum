@@ -27,6 +27,8 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 h1:/Tnpcb2E0Pz/tN9s3bfEY2Q8ePC
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0/go.mod h1:zOBXOsUaBSjKgmH4OGzV1esUpR3oUSCPYVd2cUBjKYY=
 github.com/pbrpc/connect-foundation v0.3.0 h1:nGwVV3bDmsvz/EId1BhSaIey8J9t/LXqPrVKeml6XwU=
 github.com/pbrpc/connect-foundation v0.3.0/go.mod h1:nyNWARcdoxwxjG8DDGFmfJDeUqRi3DMH24mLRjHBID4=
+github.com/pbrpc/connect-foundation v0.4.0 h1:A1V+qkoaHJxPK7ud681VccO8PhR+d6v6UQnrcz24gP8=
+github.com/pbrpc/connect-foundation v0.4.0/go.mod h1:9N9aQyNW19ckQGsy5r3Nlqg/i4BpKyc9RTIFcy4w2xY=
 github.com/pbrpc/connect-protos v0.2.1 h1:beDEisy313B4eTSusiVl7qRaOMW8Zj6nodZFmNoW9i0=
 github.com/pbrpc/connect-protos v0.2.1/go.mod h1:RhFp1PL92G2TMC+hU0FHDgHMdOtP85XyCrqPiPN37+E=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
