@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.3 - 2026-09-16
+#### Bug Fixes
+- log dependency errors - (deb37b2) - Nathan Blair
+
+- - -
+
 ## 0.0.2 - 2026-09-14
 #### Bug Fixes
 - update deps - (4aa5c9e) - Nathan Blair
