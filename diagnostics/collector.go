@@ -3,7 +3,10 @@ package diagnostics
 
 import (
 	"context"
+	"log/slog"
 	"sync"
+
+	"git.sonicoriginal.software/logger"
 
 	diagpb "github.com/pbrpc/connect-protos/diagnostics"
 )
@@ -29,11 +32,16 @@ func (c *collector) start(ctx context.Context, name string, check Check) {
 }
 
 // collect runs one check and records its result. A check that fails still
-// reports what it learned, so the result is kept either way.
+// reports what it learned, so the result is kept either way; the reason it
+// failed is logged, since the report carries only the state.
 func (c *collector) collect(ctx context.Context, name string, check Check) {
 	defer c.wg.Done()
 
-	result, _ := check(ctx)
+	result, err := check(ctx)
+	if err != nil {
+		logger.FromContext(ctx).WarnContext(ctx, "Dependency check failed",
+			slog.String("dependency", name), slog.Any("error", err))
+	}
 
 	c.mu.Lock()
 	defer c.mu.Unlock()

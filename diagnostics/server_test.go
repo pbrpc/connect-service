@@ -1,10 +1,15 @@
 package diagnostics
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"strings"
 	"testing"
+
+	"git.sonicoriginal.software/logger"
 
 	diagpb "github.com/pbrpc/connect-protos/diagnostics"
 )
@@ -99,12 +104,20 @@ func TestGetDiagnostics(t *testing.T) {
 		}
 		server := NewServer(Checks{serviceName: stub.run})
 
-		response, err := server.GetDiagnostics(t.Context(), &diagpb.GetDiagnosticsRequest{})
+		// The report carries only the state, so the reason goes to the
+		// request's logger.
+		var logged bytes.Buffer
+		ctx := logger.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(&logged, nil)))
+
+		response, err := server.GetDiagnostics(ctx, &diagpb.GetDiagnosticsRequest{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if got := response.Services[serviceName]; got != want {
 			t.Fatalf("service result = %v, want %v", got, want)
+		}
+		if line := logged.String(); !strings.Contains(line, serviceName) || !strings.Contains(line, "health check failed") {
+			t.Errorf("logged %q, want the dependency and the reason", line)
 		}
 	})
 
