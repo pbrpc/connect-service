@@ -6,19 +6,17 @@ require (
 	connectrpc.com/connect/v2 v2.0.0-alpha.1
 	git.sonicoriginal.software/logger v0.1.0
 	github.com/caarlos0/env/v11 v11.4.1
-	github.com/pbrpc/connect-client v0.1.0
+	github.com/pbrpc/connect-client v0.1.1
 	github.com/pbrpc/connect-protos v0.2.1
-	github.com/pbrpc/connect-server v0.1.0
-	github.com/pbrpc/http-client v0.1.0
+	github.com/pbrpc/connect-server v0.1.1
 	github.com/pbrpc/lifecycle v0.2.0
-	github.com/pbrpc/otel v0.1.1
+	github.com/pbrpc/otel v0.2.0
 	github.com/pbrpc/service v0.2.0
 	google.golang.org/protobuf v1.36.12
 )
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
-	github.com/cenkalti/backoff/v7 v7.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
@@ -26,7 +24,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
 	github.com/pbrpc/http-server v0.3.1 // indirect
-	github.com/pbrpc/http-transport v0.1.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.71.0 // indirect

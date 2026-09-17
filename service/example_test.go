@@ -14,7 +14,6 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	connectserver "github.com/pbrpc/connect-server"
-	httpclient "github.com/pbrpc/http-client"
 	"github.com/pbrpc/lifecycle"
 	"github.com/pbrpc/otel"
 	svc "github.com/pbrpc/service"
@@ -81,10 +80,7 @@ func Example() {
 
 	if upstreamAddress := os.Getenv("UPSTREAM_ADDRESS"); upstreamAddress != "" {
 		var httpClient *http.Client
-		httpClient, err = httpclient.FromEnv(nil)
-		if err != nil {
-			return
-		}
+		httpClient = otel.NewHTTPClient(nil)
 
 		checks["upstream"] = diagnostics.NewDependencyCheck(httpClient, upstreamAddress)
 	}
