@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.1 - 2026-09-17
+#### Bug Fixes
+- remove http-client - (e34b735) - Nathan Blair
+#### Documentation
+- remove more foundation references - (3b3bebf) - Nathan Blair
+#### Miscellaneous Chores
+- whitespace - (d812bda) - Nathan Blair
+
+- - -
+
 ## 0.2.0 - 2026-09-17
 #### Features
 - migrate off of connect-foundation - (5d25a9a) - Nathan Blair
