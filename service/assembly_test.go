@@ -12,11 +12,11 @@ import (
 	"connectrpc.com/connect/v2/connectinprocess"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	foundation "github.com/pbrpc/connect-foundation/server"
 	diagpb "github.com/pbrpc/connect-protos/diagnostics"
 	"github.com/pbrpc/connect-protos/diagnostics/diagnosticsconnect"
 	infopb "github.com/pbrpc/connect-protos/info"
 	"github.com/pbrpc/connect-protos/info/infoconnect"
+	connectserver "github.com/pbrpc/connect-server"
 
 	"github.com/pbrpc/connect-service/diagnostics"
 	"github.com/pbrpc/connect-service/health"
@@ -63,16 +63,20 @@ func (c *upstreamClient) Do(request *http.Request) (*http.Response, error) {
 // assemble is the whole startup sequence short of listening: the foundation
 // server, the caller's service, and Register. It answers with the server and
 // the health handle the caller keeps.
-func assemble(t *testing.T) (*foundation.Server, *health.Server) {
+func assemble(t *testing.T) (*connectserver.Host, *health.Server) {
 	t.Helper()
 
-	srv := foundation.New(slog.New(slog.DiscardHandler))
+	host, err := connectserver.FromEnv(slog.New(slog.DiscardHandler))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
 	healthSrv := health.NewServer()
 	checks := diagnostics.Checks{
 		dependencyName: diagnostics.NewDependencyCheck(&upstreamClient{srv: health.NewServer()}, "upstream:50051"),
 	}
 
-	methods, err := service.Register(srv.RPC, srv.Mux, healthSrv, checks, registerEcho)
+	methods, err := service.Register(host.Server, host.HTTPHost.Mux, healthSrv, checks, registerEcho)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -81,27 +85,27 @@ func assemble(t *testing.T) (*foundation.Server, *health.Server) {
 	}
 
 	// What Serve would do before listening.
-	srv.Mount()
+	host.Mount()
 
-	return srv, healthSrv
+	return host, healthSrv
 }
 
 // probe sends GET target through the mux and answers with the recording.
-func probe(srv *foundation.Server, target string) *httptest.ResponseRecorder {
+func probe(srv *connectserver.Host, target string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
-	srv.Mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, target, nil))
+	srv.HTTPHost.Mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, target, nil))
 
 	return recorder
 }
 
 func TestAssembly(t *testing.T) {
-	t.Setenv(foundation.EnvServerVersion, "1.2.3")
+	t.Setenv("SERVICE_VERSION", "1.2.3")
 
-	srv, healthSrv := assemble(t)
+	host, healthSrv := assemble(t)
 
 	// Every RPC below goes through the assembled dispatcher and its
 	// interceptors, over the in-process transport: no listener, no socket.
-	client := connect.NewClient(connectinprocess.New(srv.RPC))
+	client := connect.NewClient(connectinprocess.New(host.Server))
 
 	t.Run("the caller's service answers", func(t *testing.T) {
 		var response wrapperspb.StringValue
@@ -145,7 +149,7 @@ func TestAssembly(t *testing.T) {
 
 	t.Run("the probe route reports the process and the caller's service", func(t *testing.T) {
 		for _, target := range []string{health.HTTPPath, health.HTTPPath + "?service=" + exampleService} {
-			recorder := probe(srv, target)
+			recorder := probe(host, target)
 
 			if recorder.Code != http.StatusOK {
 				t.Errorf("%s: status = %d, want 200", target, recorder.Code)
@@ -159,7 +163,7 @@ func TestAssembly(t *testing.T) {
 	t.Run("the caller's status change reaches the probe route", func(t *testing.T) {
 		healthSrv.SetServingStatus(exampleService, health.StatusNotServing)
 
-		if recorder := probe(srv, health.HTTPPath+"?service="+exampleService); recorder.Code != http.StatusServiceUnavailable {
+		if recorder := probe(host, health.HTTPPath+"?service="+exampleService); recorder.Code != http.StatusServiceUnavailable {
 			t.Errorf("status = %d, want 503", recorder.Code)
 		}
 	})

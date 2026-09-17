@@ -6,9 +6,10 @@ import (
 
 	"connectrpc.com/connect/v2"
 
-	foundation "github.com/pbrpc/connect-foundation/server"
+	"github.com/caarlos0/env/v11"
 	"github.com/pbrpc/connect-protos/diagnostics/diagnosticsconnect"
 	"github.com/pbrpc/connect-protos/info/infoconnect"
+	svc "github.com/pbrpc/service"
 
 	"github.com/pbrpc/connect-service/diagnostics"
 	"github.com/pbrpc/connect-service/health"
@@ -48,8 +49,10 @@ func Register(
 		registerFn(rpc)
 	}
 
+	configured, _ := env.ParseAs[svc.Configuration]()
+
 	diagnosticsconnect.RegisterDiagnosticsServiceHandler(rpc, diagnostics.NewServer(checks))
-	infoconnect.RegisterInfoServiceHandler(rpc, &infoServer{version: foundation.Version()})
+	infoconnect.RegisterInfoServiceHandler(rpc, &infoServer{version: configured.Version})
 	mux.Handle(health.HTTPPath, healthSrv)
 
 	methodNames := methods(rpc.Specs())

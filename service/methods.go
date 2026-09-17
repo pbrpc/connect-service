@@ -18,10 +18,10 @@ var infrastructurePrefixes = []string{
 	"diagnostics.", // diagnostics endpoint
 }
 
-// serviceName reports the fully qualified service owning a procedure named in
+// serviceName reports the fully qualified service owning a method named in
 // wire format, "/package.Service/Method".
-func serviceName(procedure string) string {
-	name, _, _ := strings.Cut(strings.TrimPrefix(procedure, "/"), "/")
+func serviceName(method string) string {
+	name, _, _ := strings.Cut(strings.TrimPrefix(method, "/"), "/")
 
 	return name
 }

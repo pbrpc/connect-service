@@ -5,18 +5,15 @@ diagnostics, assembled in one call.
 
 ## About
 
-[connect-foundation](https://github.com/pbrpc/connect-foundation)
-decides how a server serves: its options, telemetry, errors, and shutdown. This
-library decides what a server exposes beyond its own services. A caller that
-wants the first without the second takes foundation alone.
+This library decides what a server exposes beyond its own services. A caller
+that wants the first without the second takes foundation alone.
 
 The contract a consumer signs up for are the protos in
-[connect-protos](https://github.com/pbrpc/connect-protos)
-plus the mounted set:
+[connect-protos](https://github.com/pbrpc/connect-protos) plus the mounted set:
 
 - `GET /healthz` — the serving status of the process and of each service, for
   HTTP probes
-- `info.InfoService` — the server's version, read from `GRPC_SERVER_VERSION`
+- `info.InfoService` — the server's version, read from `SERVICE_VERSION`
 - `diagnostics.DiagnosticsService` — the state of each dependency the caller
   names
 
@@ -30,8 +27,8 @@ go get github.com/pbrpc/connect-service
 
 ## What's Included
 
-- **`service/`** — `Register`, which attaches the endpoints above alongside
-  the caller's own
+- **`service/`** — `Register`, which attaches the endpoints above alongside the
+  caller's own
 - **`health/`** — the health server behind `GET /healthz` and the client-side
   `Check` that probes it
 - **`diagnostics/`** — the diagnostics server and the checks it runs
@@ -41,8 +38,8 @@ go get github.com/pbrpc/connect-service
 ### Assembly
 
 `service.Register` attaches the caller's services to the RPC dispatcher, then
-the info and diagnostics services, puts the health route on the mux, marks
-each of the caller's services SERVING, and returns their fully qualified method
+the info and diagnostics services, puts the health route on the mux, marks each
+of the caller's services SERVING, and returns their fully qualified method
 names.
 
 It assembles only. The listener, the server, the background goroutines, and the
@@ -62,8 +59,8 @@ services, which are infrastructure rather than something a caller advertises.
 
 `health.NewServer()` marks the `""` entry SERVING, which answers "is this
 process alive". `Register` adds an entry per service the caller registered,
-under its fully qualified name, so a probe asks about
-`yourpackage.YourService` rather than a logical name of your choosing.
+under its fully qualified name, so a probe asks about `yourpackage.YourService`
+rather than a logical name of your choosing.
 
 Those entries start SERVING and stay there until you change them. Only your
 application knows whether a given upstream being down means it can still do its
@@ -77,10 +74,10 @@ The generated `YourServiceName` constant is the same name `Register` used, so
 the two cannot drift.
 
 The statuses answer on `GET /healthz` for the process and
-`GET /healthz?service=yourpackage.YourService` for one service: 200 for
-SERVING, 503 otherwise, 404 for a service never recorded, with
-`{"status":"SERVING"}` as the JSON body. Kubernetes `httpGet` probes, load
-balancer health checks, and `health.Check` all read it.
+`GET /healthz?service=yourpackage.YourService` for one service: 200 for SERVING,
+503 otherwise, 404 for a service never recorded, with `{"status":"SERVING"}` as
+the JSON body. Kubernetes `httpGet` probes, load balancer health checks, and
+`health.Check` all read it.
 
 ### Diagnostics
 
@@ -104,5 +101,4 @@ database, a cache — is one the caller writes.
 
 ## Configuration
 
-- `GRPC_SERVER_VERSION` — what the info service answers with. Read through
-  `connect-foundation`.
+- `SERVICE_VERSION` — what the info service answers with. Read from `service`.

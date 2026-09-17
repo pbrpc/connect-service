@@ -8,7 +8,7 @@ import (
 
 	"connectrpc.com/connect/v2/connecthttp"
 
-	foundationclient "github.com/pbrpc/connect-foundation/client"
+	connectclient "github.com/pbrpc/connect-client"
 )
 
 // Check asks the peer at address whether its process is serving, through the
@@ -16,7 +16,7 @@ import (
 // peer could not be asked or did not answer with a status.
 func Check(ctx context.Context, httpClient connecthttp.HTTPClient, address string) (Status, error) {
 	request, err := http.NewRequestWithContext(
-		ctx, http.MethodGet, foundationclient.BaseURL(address)+HTTPPath, nil,
+		ctx, http.MethodGet, connectclient.BaseURL(address)+HTTPPath, nil,
 	)
 	if err != nil {
 		return StatusUnknown, err
