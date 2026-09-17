@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,6 +45,7 @@ func Example() {
 	// The process context. The shutdown builds its deadline on this one, which
 	// is why the signal cancels a child of it rather than this.
 	ctx := context.Background()
+	stack := lifecycle.Stack{}
 
 	serveCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -55,8 +57,7 @@ func Example() {
 		slog.Default().Error("Failed to initialize telemetry", slog.Any("error", err))
 		return
 	}
-
-	ctx = logger.ContextWithLogger(ctx, log)
+	stack.Push(lifecycle.Logged(log, "telemetry", flush))
 
 	// New installs an interceptor that puts this logger into every request
 	// context, so it has to be built after the logger is complete.
@@ -64,10 +65,9 @@ func Example() {
 	if err != nil {
 		return
 	}
+	stack.Push(lifecycle.Logged(log, "server", host.HTTPHost.Server.Shutdown))
 
-	stack := lifecycle.Stack{}
-	stack.Push(flush)
-	stack.Push(host.HTTPHost.Server.Shutdown)
+	ctx = logger.ContextWithLogger(ctx, log)
 
 	// Deferred before anything else can fail, so every path out of here stops
 	// the server and exports what it logged on the way.
@@ -80,14 +80,12 @@ func Example() {
 	checks := diagnostics.Checks{}
 
 	if upstreamAddress := os.Getenv("UPSTREAM_ADDRESS"); upstreamAddress != "" {
-		httpClient, err := httpclient.FromEnv(nil)
+		var httpClient *http.Client
+		httpClient, err = httpclient.FromEnv(nil)
 		if err != nil {
 			return
 		}
 
-		// The Connect client for the upstream's own procedures is built on the
-		// same HTTP client:
-		//   foundationclient.New(httpClient, foundationclient.BaseURL(upstreamAddress), nil)
 		checks["upstream"] = diagnostics.NewDependencyCheck(httpClient, upstreamAddress)
 	}
 

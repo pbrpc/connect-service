@@ -60,9 +60,9 @@ func (c *upstreamClient) Do(request *http.Request) (*http.Response, error) {
 	return recorder.Result(), nil
 }
 
-// assemble is the whole startup sequence short of listening: the foundation
-// server, the caller's service, and Register. It answers with the server and
-// the health handle the caller keeps.
+// assemble is the whole startup sequence short of listening: the connect server,
+// the caller's service, and Register. It answers with the server and the health
+// handle the caller keeps.
 func assemble(t *testing.T) (*connectserver.Host, *health.Server) {
 	t.Helper()
 

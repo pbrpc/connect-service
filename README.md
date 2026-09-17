@@ -5,17 +5,13 @@ diagnostics, assembled in one call.
 
 ## About
 
-This library decides what a server exposes beyond its own services. A caller
-that wants the first without the second takes foundation alone.
+This library decides what a server exposes beyond its own services.
 
 The contract a consumer signs up for are the protos in
-[connect-protos](https://github.com/pbrpc/connect-protos) plus the mounted set:
+[connect-protos](https://github.com/pbrpc/connect-protos) plus:
 
 - `GET /healthz` — the serving status of the process and of each service, for
   HTTP probes
-- `info.InfoService` — the server's version, read from `SERVICE_VERSION`
-- `diagnostics.DiagnosticsService` — the state of each dependency the caller
-  names
 
 Every procedure answers gRPC, gRPC-Web, and Connect-protocol clients.
 
