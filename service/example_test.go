@@ -40,6 +40,7 @@ func Example() {
 	if err != nil {
 		return
 	}
+
 	// The process context. The shutdown builds its deadline on this one, which
 	// is why the signal cancels a child of it rather than this.
 	ctx := context.Background()
