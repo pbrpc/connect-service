@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-09-17
+#### Features
+- migrate off of connect-foundation - (5d25a9a) - Nathan Blair
+
+- - -
+
 ## 0.1.1 - 2026-09-16
 #### Bug Fixes
 - update connect-foundation - (6826706) - Nathan Blair
