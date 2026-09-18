@@ -14,6 +14,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	connectserver "github.com/pbrpc/connect-server"
+	transport "github.com/pbrpc/http-transport"
 	"github.com/pbrpc/lifecycle"
 	"github.com/pbrpc/otel"
 	svc "github.com/pbrpc/service"
@@ -79,8 +80,14 @@ func Example() {
 	checks := diagnostics.Checks{}
 
 	if upstreamAddress := os.Getenv("UPSTREAM_ADDRESS"); upstreamAddress != "" {
-		var httpClient *http.Client
-		httpClient = otel.NewHTTPClient(nil)
+		var base *http.Transport
+		base, err = transport.From(nil)
+		if err != nil {
+			log.Error("Failed to build transport", slog.Any("error", err))
+			return
+		}
+
+		httpClient := &http.Client{Transport: otel.NewTransport(base)}
 
 		checks["upstream"] = diagnostics.NewDependencyCheck(httpClient, upstreamAddress)
 	}
