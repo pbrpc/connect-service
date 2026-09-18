@@ -9,7 +9,7 @@ require (
 	github.com/pbrpc/connect-client v0.1.1
 	github.com/pbrpc/connect-protos v0.2.1
 	github.com/pbrpc/connect-server v0.1.1
-	github.com/pbrpc/http-transport v0.2.0
+	github.com/pbrpc/http-transport v0.3.0
 	github.com/pbrpc/lifecycle v0.2.0
 	github.com/pbrpc/otel v0.3.0
 	github.com/pbrpc/service v0.2.0
@@ -44,7 +44,7 @@ require (
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260911204522-f61a6ca850bd // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260911204522-f61a6ca850bd // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260918162117-cecb64721679 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260918162117-cecb64721679 // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 )
