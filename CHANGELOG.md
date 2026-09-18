@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.3 - 2026-09-18
+#### Bug Fixes
+- update deps - (f5bd706) - Nathan Blair
+
+- - -
+
 ## 0.2.2 - 2026-09-18
 #### Bug Fixes
 - example uses correct transport build - (2a06c25) - Nathan Blair
