@@ -73,7 +73,9 @@ The statuses answer on `GET /healthz` for the process and
 `GET /healthz?service=yourpackage.YourService` for one service: 200 for SERVING,
 503 otherwise, 404 for a service never recorded, with `{"status":"SERVING"}` as
 the JSON body. Kubernetes `httpGet` probes, load balancer health checks, and
-`health.Check` all read it.
+`health.Check` all read it; `health.CheckService` asks for one service, which is
+what a dependent asks when a peer's process can be up while the service on it is
+not.
 
 ### Diagnostics
 

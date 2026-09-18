@@ -76,6 +76,33 @@ func TestCheck(t *testing.T) {
 		}
 	})
 
+	t.Run("asks for a service and reports what the peer recorded for it", func(t *testing.T) {
+		srv := NewServer()
+		srv.SetServingStatus("pkg.Service", StatusNotServing)
+		client := &serverClient{srv: srv}
+
+		got, err := CheckService(t.Context(), client, "cache:443", "pkg.Service")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != StatusNotServing {
+			t.Errorf("status = %v, want NOT_SERVING", got)
+		}
+		if want := "http://cache:443" + HTTPPath + "?service=pkg.Service"; client.request.URL.String() != want {
+			t.Errorf("request URL = %q, want %q", client.request.URL, want)
+		}
+	})
+
+	t.Run("reports unknown for a service the peer never recorded", func(t *testing.T) {
+		got, err := CheckService(t.Context(), &serverClient{srv: NewServer()}, "cache:443", "pkg.Service")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		if got != StatusUnknown {
+			t.Errorf("status = %v, want UNKNOWN", got)
+		}
+	})
+
 	t.Run("reports unknown when the peer cannot be reached", func(t *testing.T) {
 		want := errors.New("connection refused")
 

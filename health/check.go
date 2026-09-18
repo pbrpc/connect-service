@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"connectrpc.com/connect/v2/connecthttp"
 
@@ -15,9 +16,22 @@ import (
 // probe route this package serves. UNKNOWN comes back with the error when the
 // peer could not be asked or did not answer with a status.
 func Check(ctx context.Context, httpClient connecthttp.HTTPClient, address string) (Status, error) {
-	request, err := http.NewRequestWithContext(
-		ctx, http.MethodGet, connectclient.BaseURL(address)+HTTPPath, nil,
-	)
+	return CheckService(ctx, httpClient, address, "")
+}
+
+// CheckService asks the peer at address whether service is serving, through
+// the probe route this package serves; service empty asks for the process.
+// UNKNOWN comes back with the error when the peer could not be asked, never
+// recorded the service, or did not answer with a status.
+func CheckService(
+	ctx context.Context, httpClient connecthttp.HTTPClient, address, service string,
+) (Status, error) {
+	probe := connectclient.BaseURL(address) + HTTPPath
+	if service != "" {
+		probe += "?" + url.Values{serviceQuery: {service}}.Encode()
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, probe, nil)
 	if err != nil {
 		return StatusUnknown, err
 	}
