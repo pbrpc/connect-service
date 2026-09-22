@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.1 - 2026-09-22
+#### Bug Fixes
+- use bumped otel module - (37f8342) - Nathan Blair
+
+- - -
+
 ## 0.3.0 - 2026-09-18
 #### Features
 - expose CheckService API - (b06f1d9) - Nathan Blair
