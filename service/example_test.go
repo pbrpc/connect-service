@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"uuid"
 
 	"git.sonicoriginal.software/logger"
 
@@ -52,7 +53,7 @@ func Example() {
 
 	serverName := configured.Name
 
-	log, flush, err := otel.Init(ctx, serverName, configured.Version)
+	log, flush, err := otel.Init(ctx, serverName, configured.Version, uuid.New().String())
 	if err != nil {
 		slog.Default().Error("Failed to initialize telemetry", slog.Any("error", err))
 		return
@@ -97,7 +98,13 @@ func Example() {
 	// The returned method list names what this server exposes beyond the
 	// infrastructure endpoints. A service that advertises itself somewhere
 	// hands it on; this one has nowhere to advertise.
-	_, err = service.Register(host.Server, host.HTTPHost.Mux, healthSrv, checks, registerEcho)
+	_, err = service.Register(
+		host.Server,
+		host.HTTPHost.Mux,
+		healthSrv,
+		checks,
+		registerEcho,
+	)
 	if err != nil {
 		log.Error("Failed to register services", slog.Any("error", err))
 		return
